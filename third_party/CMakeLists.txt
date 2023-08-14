@@ -22,3 +22,10 @@ set(CLIP_EXAMPLES OFF)
 set(CLIP_TESTS OFF)
 FetchContent_GetProperties(clip)
 FetchContent_MakeAvailable(clip)
+
+FetchContent_Declare(xxtea
+  GIT_REPOSITORY https://github.com/xxtea/xxtea-c
+  GIT_TAG v1.0.1
+)
+FetchContent_GetProperties(xxtea)
+FetchContent_MakeAvailable(xxtea)

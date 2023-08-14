@@ -1,5 +1,10 @@
+#include <example/base64.h>
+#include <filesystem>
+#include <fstream>
 #include <memory>
+#include <stdexcept>
 #include <string>
+#include <xxtea.h>
 
 #include "clip.h"
 #include "ftxui/component/captured_mouse.hpp"
@@ -18,6 +23,24 @@ struct login_struct
     std::string password;
 };
 
+std::string Encrypt(const std::string &text, const std::string &key)
+{
+    size_t len;
+    unsigned char *encrypted_data = (unsigned char *)xxtea_encrypt(text.c_str(), text.length(), key.c_str(), &len);
+    const char *enc = base64_encode(encrypted_data, len);
+
+    return std::string(enc);
+}
+
+std::string Decrypt(const std::string &encrypted_data, const std::string &key)
+{
+    size_t len;
+    const auto *bla = base64_decode(encrypted_data.c_str(), &len);
+    char *decrypted = (char *)xxtea_decrypt(bla, len, key.c_str(), &len);
+
+    return std::string(decrypted, len);
+}
+
 Component Wrap(std::string name, Component component)
 {
     return Renderer(
@@ -31,17 +54,49 @@ Component Wrap(std::string name, Component component)
                  xflex; });
 }
 
-int main()
+std::vector<login_struct> passwords;
+void SavePasswords()
 {
+    std::ofstream out_file(".pwdb");
+    for (const auto &password : passwords)
+    {
+        out_file << password.label << "~" << password.username << "~" << password.password << "\n";
+    }
+    out_file.close();
+}
+
+void ReadPasswords()
+{
+    std::ifstream in_file(".pwdb");
+    std::string line;
+    while (std::getline(in_file, line))
+    {
+        std::string sub_strings[3];
+        int tilde_counter = 0;
+        for (const auto &ch : line)
+        {
+            if (ch == '~')
+            {
+                tilde_counter++;
+                continue;
+            }
+            sub_strings[tilde_counter] += ch;
+        }
+        passwords.push_back({sub_strings[0], sub_strings[1], sub_strings[2]});
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    std::cout << "Please enter your passphrase: \n";
+    std::string pass_phrase;
+    std::cin >> pass_phrase;
     auto screen = ScreenInteractive::Fullscreen();
 
     auto status_box = text("Status: ");
-    auto shortcut_box = text("Shortcuts: 'u' - copy username, 'p' - copy passwordm, 'd' - delete entry.");
+    auto shortcut_box = text("Shortcuts: 'u' - copy username, 'p' - copy password, 'd' - delete entry.");
 
-    std::vector<login_struct> passwords;
-    passwords.push_back({"reddit", "asdfasdfasdf", "abskdlfjkdsjdklf"});
-    passwords.push_back({"facebook", "asdfasdfasdf", "abskdlfjkdsjdklf"});
-    passwords.push_back({"youtube", "asdfasdfasdf", "abskdlfjkdsjdklf"});
+    ReadPasswords();
 
     std::vector<std::string> menu_items;
     for (const auto &password : passwords)
@@ -88,24 +143,37 @@ int main()
     password_input = Wrap("New Password", password_input);
 
     std::string button_label = "Add";
-    std::function<void()> on_button_clicked_;
     auto add_button = Button(
         &button_label,
         [&]()
         {
             if (new_label.empty() || new_username.empty())
                 return;
-            passwords.push_back({new_label, new_username, new_password});
-            menu_items.push_back(new_password);
+            passwords.push_back({new_label, new_username, Encrypt(new_password, pass_phrase)});
+            menu_items.push_back(new_label);
+            new_label = "";
+            new_username = "";
+            new_password = "";
+            SavePasswords();
+            label_input->TakeFocus();
         });
     add_button = Wrap("Add new password", add_button);
+
+    std::string save_button_label = "Save";
+    auto save_button = Button(
+        &save_button_label,
+        [&]()
+        {
+            SavePasswords();
+        });
 
     auto layout = Container::Vertical(
         {menu,
          label_input,
          username_input,
          password_input,
-         add_button});
+         add_button,
+         save_button});
 
     auto component = Renderer(layout, [&]
                               { return vbox(
@@ -115,6 +183,7 @@ int main()
                                             username_input->Render(),
                                             password_input->Render(),
                                             add_button->Render(),
+                                            save_button->Render(),
                                             separator(),
                                             status_box,
                                             separator(),
