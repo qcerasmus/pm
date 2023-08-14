@@ -1,13 +1,13 @@
-#include <memory> // for shared_ptr, __shared_ptr_access
-#include <string> // for operator+, to_string
+#include <memory>
+#include <string>
 
 #include "clip.h"
-#include "ftxui/component/captured_mouse.hpp" // for ftxui
-#include "ftxui/component/component.hpp"      // for Button, Horizontal, Renderer
-#include "ftxui/component/component_base.hpp" // for ComponentBase
+#include "ftxui/component/captured_mouse.hpp"
+#include "ftxui/component/component.hpp"
+#include "ftxui/component/component_base.hpp"
 #include "ftxui/component/event.hpp"
-#include "ftxui/component/screen_interactive.hpp" // for ScreenInteractive
-#include "ftxui/dom/elements.hpp"                 // for separator, gauge, text, Element, operator|, vbox, border
+#include "ftxui/component/screen_interactive.hpp"
+#include "ftxui/dom/elements.hpp"
 
 using namespace ftxui;
 
@@ -55,7 +55,6 @@ int main()
             return false;
         });
 
-    // Modify the way to render them on screen:
     auto component = Renderer(
         menu,
         [&]
