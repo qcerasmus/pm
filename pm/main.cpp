@@ -70,7 +70,7 @@ int main()
                  }) |
                  border; });
 
-    auto screen = ScreenInteractive::TerminalOutput();
+    auto screen = ScreenInteractive::Fullscreen();
 
     component |= CatchEvent(
         [&](Event event)
