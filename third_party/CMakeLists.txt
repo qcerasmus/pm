@@ -12,7 +12,13 @@ set(FTXUI_CLANG_TIDY OFF)
 set(FTXUI_ENABLE_COVERAGE OFF)
 set(FTXUI_DEV_WARNINGS OFF)
 FetchContent_GetProperties(ftxui)
-if (NOT ftxui_POPULATED)
-  FetchContent_Populate(ftxui)
-  add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
+FetchContent_MakeAvailable(ftxui)
+
+FetchContent_Declare(clip
+  GIT_REPOSITORY https://github.com/dacap/clip
+  GIT_TAG v1.5
+)
+set(CLIP_EXAMPLES OFF)
+set(CLIP_TESTS OFF)
+FetchContent_GetProperties(clip)
+FetchContent_MakeAvailable(clip)
