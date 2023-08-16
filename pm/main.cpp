@@ -57,7 +57,7 @@ Component Wrap(std::string name, Component component)
 std::vector<login_struct> passwords;
 void SavePasswords()
 {
-    std::ofstream out_file(".pwdb");
+    std::ofstream out_file(".pwdb", std::ios_base::out);
     for (const auto &password : passwords)
     {
         out_file << password.label << "~" << password.username << "~" << password.password << "\n";
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
             else if (event.character() == "p")
             {
                 status_box = text("Status: copied password for " + passwords[menu_selected].label + " to clipboard");
-                clip::set_text(passwords[menu_selected].password);
+                clip::set_text(Decrypt(passwords[menu_selected].password, pass_phrase));
                 return true;
             }
             else if (event.character() == "d")
@@ -164,7 +164,9 @@ int main(int argc, char *argv[])
         &save_button_label,
         [&]()
         {
+            status_box = text("Status: Saving passwords now: " + passwords[menu_selected].label);
             SavePasswords();
+            status_box = text("Status: Done saving passwords now: " + passwords[menu_selected].label);
         });
 
     auto layout = Container::Vertical(
