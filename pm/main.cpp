@@ -43,15 +43,16 @@ std::string Decrypt(const std::string &encrypted_data, const std::string &key)
 
 Component Wrap(std::string name, Component component)
 {
-    return Renderer(
-        component,
+    return Renderer(component,
         [name, component]
-        { return hbox({
-                     text(name) | size(WIDTH, EQUAL, 8),
-                     separator(),
-                     component->Render() | xflex,
-                 }) |
-                 xflex; });
+        {
+            return hbox({
+                       text(name) | size(WIDTH, EQUAL, 8),
+                       separator(),
+                       component->Render() | xflex,
+                   }) |
+                   xflex;
+        });
 }
 
 std::vector<login_struct> passwords;
@@ -143,8 +144,7 @@ int main(int argc, char *argv[])
     password_input = Wrap("New Password", password_input);
 
     std::string button_label = "Add";
-    auto add_button = Button(
-        &button_label,
+    auto add_button = Button(&button_label,
         [&]()
         {
             if (new_label.empty() || new_username.empty())
@@ -160,8 +160,7 @@ int main(int argc, char *argv[])
     add_button = Wrap("Add new password", add_button);
 
     std::string save_button_label = "Save";
-    auto save_button = Button(
-        &save_button_label,
+    auto save_button = Button(&save_button_label,
         [&]()
         {
             status_box = text("Status: Saving passwords now: " + passwords[menu_selected].label);
@@ -169,28 +168,17 @@ int main(int argc, char *argv[])
             status_box = text("Status: Done saving passwords now: " + passwords[menu_selected].label);
         });
 
-    auto layout = Container::Vertical(
-        {menu,
-         label_input,
-         username_input,
-         password_input,
-         add_button,
-         save_button});
+    auto layout = Container::Vertical({menu, label_input, username_input, password_input, add_button, save_button});
 
-    auto component = Renderer(layout, [&]
-                              { return vbox(
-                                           {menu->Render() | flex,
-                                            separator(),
-                                            label_input->Render(),
-                                            username_input->Render(),
-                                            password_input->Render(),
-                                            add_button->Render(),
-                                            save_button->Render(),
-                                            separator(),
-                                            status_box,
-                                            separator(),
-                                            shortcut_box}) |
-                                       xflex | border; });
+    auto component = Renderer(layout,
+        [&]
+        {
+            return vbox({menu->Render() | flex, separator(), label_input->Render(), username_input->Render(),
+                       password_input->Render(), add_button->Render(), save_button->Render(), separator(), status_box,
+                       separator(), shortcut_box}) |
+                   xflex | border;
+        });
     screen.Loop(component);
     return 0;
 }
+
